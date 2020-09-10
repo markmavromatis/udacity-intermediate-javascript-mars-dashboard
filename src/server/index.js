@@ -47,8 +47,8 @@ async function getRoverDetails(roverName) {
     .then(async (data) => {
         const manifestData = data.photo_manifest;
         let newRover = new Rover(manifestData);
-        await getRoverPhotoDetails(newRover, newRover.maxDate, 0)
-            // .then(() => {return newRover});
+        // Retrieve first page
+        await getRoverPhotoDetails(newRover, newRover.maxDate, 1)
         return newRover;
     });
     return newRover;
@@ -56,7 +56,7 @@ async function getRoverDetails(roverName) {
 
 async function getRoverPhotoDetails(rover, photoDate, page) {
     console.log(`Querying Rover photo details for rover/date: ${rover.name} / ${photoDate}`);
-
+    console.log("\tPage = " + page);
     if (rover.photosData[photoDate].pages[page]) {
         // Nothing to do. We already have the data.
         return;
@@ -70,6 +70,8 @@ async function getRoverPhotoDetails(rover, photoDate, page) {
         let newPhotos = [];
         newPhotos = photoData.map((aRecord) => {return {id: aRecord.id, src : aRecord.img_src}})
         rover.photosData[photoDate].pages[page] = newPhotos;
+        console.log("****");
+        console.log(JSON.stringify(rover.photosData[photoDate].pages));
     });
 }
 
@@ -86,7 +88,7 @@ async function init() {
 }
 init().then(() => {
     console.log("New rover details: " + rovers['Curiosity']);
-    console.log(JSON.stringify(rovers['Curiosity']));
+    // console.log(JSON.stringify(rovers['Curiosity']));
     console.log("DONE!");    
 });
 
@@ -107,7 +109,57 @@ app.get('/roverDetails/:roverName', async (req, res) => {
     console.log("Known rovers = " + Object.keys(rovers));
     if (rovers[roverName]) {
         const aRover = rovers[roverName];
-        res.send({name: aRover.name});
+        res.send({
+            name: aRover.name,
+            landingDate: aRover.landingDate,
+            launchDate: aRover.launchDate,
+            status: aRover.status,
+            maxDate: aRover.maxDate
+        });
+    } else {
+        res.status(404).send("Unable to identify rover: " + roverName);
+    }
+})
+
+app.get('/photoStats/:roverName/:photosDate', async (req, res) => {
+    const roverName = req.params.roverName;
+    const photosDate = req.params.photosDate;
+    console.log("Name = " + roverName);
+    console.log("Photos Date = " + photosDate);
+    if (rovers[roverName]) {
+        const aRover = rovers[roverName];
+        // console.log(JSON.stringify(aRover));
+        console.log(JSON.stringify(aRover.photosData['2020-09-09']));
+        
+        let photosRecord = aRover.photosData[photosDate];
+        if (!photosRecord) {
+            // Download the photos record
+            await getRoverPhotoDetails(aRover, photosDate, 0)
+            photosRecord = aRover.photosData[photosDate];
+        };
+        const totalPhotos = photosRecord.totalPhotos;
+        res.send({
+            totalPhotos : totalPhotos,
+            pages: Math.floor(totalPhotos / 25) + (totalPhotos % 25 > 0 ? 1 : 0)
+        });
+    } else {
+        res.status(404).send("Unable to identify rover: " + roverName);
+    }
+})
+
+app.get('/photoUrls/:roverName/:photosDate/:pageNumber', async (req, res) => {
+    const roverName = req.params.roverName;
+    const photosDate = req.params.photosDate;
+    const pageNumber = req.params.pageNumber;
+
+    if (rovers[roverName]) {
+        const aRover = rovers[roverName];
+        await getRoverPhotoDetails(aRover, photosDate, pageNumber);
+        photosRecord = aRover.photosData[photosDate];
+        pageRecord = photosRecord.pages[pageNumber];
+        const returnPhotos = pageRecord.map((aRecord) => {return {id: aRecord.id, src: aRecord.src}});
+        res.send(returnPhotos);
+
     } else {
         res.status(404).send("Unable to identify rover: " + roverName);
     }
