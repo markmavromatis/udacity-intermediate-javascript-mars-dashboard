@@ -56,13 +56,13 @@ async function getRoverDetails(roverName) {
 
 async function getRoverPhotoDetails(rover, photoDate, page) {
     console.log(`Querying Rover photo details for rover/date: ${rover.name} / ${photoDate}`);
-    console.log("\tPage = " + page);
+
     if (rover.photosData[photoDate].pages[page]) {
         // Nothing to do. We already have the data.
         return;
     }
     const url = `https://api.nasa.gov/mars-photos/api/v1/rovers/${rover.name.toLowerCase()}/photos?earth_date=${photoDate}&page=${page}&api_key=${API_KEY}`;
-    console.log("URL = " + url);
+
     const photoDetails = await fetch(url)
     .then(response => response.json())
     .then(data => {
@@ -70,8 +70,6 @@ async function getRoverPhotoDetails(rover, photoDate, page) {
         let newPhotos = [];
         newPhotos = photoData.map((aRecord) => {return {id: aRecord.id, src : aRecord.img_src}})
         rover.photosData[photoDate].pages[page] = newPhotos;
-        console.log("****");
-        console.log(JSON.stringify(rover.photosData[photoDate].pages));
     });
 }
 
@@ -82,20 +80,20 @@ console.log("Loading Rover details...");
 // Initialize data for all Rovers
 async function init() {
     for (name of ROVER_NAMES) {
-        console.log("Calling getRoverDetails for: " + name)
         rovers[name] = await getRoverDetails(name);
     }
 }
+
+
 init().then(() => {
-    console.log("New rover details: " + rovers['Curiosity']);
-    // console.log(JSON.stringify(rovers['Curiosity']));
-    console.log("DONE!");    
+    console.log(`Loaded data for all ${ROVER_NAMES.length} rovers!`);
 });
 
 // example API call
-app.get('/apod', async (req, res) => {
+app.get('/apod/:queryDate', async (req, res) => {
+    const queryDate = req.params.queryDate;
     try {
-        let image = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${API_KEY}`)
+        let image = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${API_KEY}&date=${queryDate}`)
             .then(res => res.json())
         res.send({ image })
     } catch (err) {
@@ -105,8 +103,7 @@ app.get('/apod', async (req, res) => {
 
 app.get('/roverDetails/:roverName', async (req, res) => {
     const roverName = req.params.roverName;
-    console.log("Name = " + roverName);
-    console.log("Known rovers = " + Object.keys(rovers));
+
     if (rovers[roverName]) {
         const aRover = rovers[roverName];
         res.send({
@@ -124,12 +121,9 @@ app.get('/roverDetails/:roverName', async (req, res) => {
 app.get('/photoStats/:roverName/:photosDate', async (req, res) => {
     const roverName = req.params.roverName;
     const photosDate = req.params.photosDate;
-    console.log("Name = " + roverName);
-    console.log("Photos Date = " + photosDate);
+
     if (rovers[roverName]) {
         const aRover = rovers[roverName];
-        // console.log(JSON.stringify(aRover));
-        console.log(JSON.stringify(aRover.photosData['2020-09-09']));
         
         let photosRecord = aRover.photosData[photosDate];
         if (!photosRecord) {

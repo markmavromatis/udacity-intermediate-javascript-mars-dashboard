@@ -1,4 +1,7 @@
 
+const HOSTNAME="localhost";
+const PORT=3000;
+
 let store = {
     user: { name: "Student" },
     apod: '',
@@ -17,29 +20,21 @@ const render = async (root, state) => {
     root.innerHTML = App(state)
 }
 
-console.log("Fetching rover details...")
 
 // Load manifest data for 3 rovers
 store.rovers.forEach(aRover => {
-    fetch(`https://api.nasa.gov/mars-photos/api/v1/manifests/${aRover.toLowerCase()}?api_key=xtHbjatP9F0J3DvWg3pYrDPr8KwZYjYXFc4TDWHq`)
+    fetch(`http://${HOSTNAME}:${PORT}/roverDetails/${aRover}`)
     .then(response => response.json())
     .then(data => {
-        const manifestData = data.photo_manifest;
-        const landingDate = manifestData.landing_date;
-        const launchDate = manifestData.launch_date;
-        const maxSol = manifestData.max_sol;
-        console.log("Rover Name: " + aRover);
-        console.log("Launch Date: " + launchDate);
-        console.log("Landing Date: " + landingDate);
-        console.log("Maximum Sol: " + maxSol);
-        console.log(data);
+        console.log("Rover Name: " + data.name);
+        console.log("Launch Date: " + data.launchDate);
+        console.log("Landing Date: " + data.landingDate);
+        console.log("Status: " + data.status);
+        console.log("Maximum Date: " + data.maxDate);
     });
     
 })
-console.log("Just a test! " + process.env.API_KEY);
-// (rovers) => {
-//     rovers.forEach
-// };
+
 
 // create content
 const App = (state) => {
@@ -92,14 +87,15 @@ const ImageOfTheDay = (apod) => {
 
     // If image does not already exist, or it is not from today -- request it again
     const today = new Date()
-    const photodate = new Date(apod.date)
-    console.log(photodate.getDate(), today.getDate());
-
-    console.log(photodate.getDate() === today.getDate());
+    // const photodate = new Date(apod.date)
+    // console.log("Photo date is: " + photodate);
+    // console.log(photodate.getDate(), today.getDate());
+// 
+    // console.log(photodate.getDate() === today.getDate());
     if (!apod || apod.date === today.getDate() ) {
         getImageOfTheDay(store)
     }
-
+    console.log(JSON.stringify(apod));
     // check if the photo of the day is actually type video!
     if (apod.media_type === "video") {
         return (`
@@ -117,13 +113,25 @@ const ImageOfTheDay = (apod) => {
 
 // ------------------------------------------------------  API CALLS
 
+function getFormattedDate() {
+    const todayDate = new Date();
+    const year = todayDate.getFullYear();
+    const monthAsNumber = todayDate.getMonth() + 1;
+    const monthFormatted = (monthAsNumber < 10) ? "0" + monthAsNumber: monthAsNumber;
+    const dateAsNumber = todayDate.getDate();
+    const dateFormatted = (dateAsNumber < 10) ? "0" + dateAsNumber: dateAsNumber;
+    let yyyymmddFormat = `${year}-${monthFormatted}-${dateFormatted}`; 
+    return yyyymmddFormat;
+}
+
 // Example API call
 const getImageOfTheDay = (state) => {
     let { apod } = state
 
-    fetch(`http://localhost:3000/apod`)
+    let todayDate = getFormattedDate();
+    fetch(`http://localhost:3000/apod/${todayDate}`)
         .then(res => res.json())
-        .then(apod => updateStore(store, { apod }))
-
-    return data
+        .then(apod => {
+            updateStore(store, { apod });
+        })
 }
