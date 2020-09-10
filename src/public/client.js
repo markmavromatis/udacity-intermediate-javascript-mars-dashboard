@@ -1,3 +1,4 @@
+
 let store = {
     user: { name: "Student" },
     apod: '',
@@ -16,6 +17,29 @@ const render = async (root, state) => {
     root.innerHTML = App(state)
 }
 
+console.log("Fetching rover details...")
+
+// Load manifest data for 3 rovers
+store.rovers.forEach(aRover => {
+    fetch(`https://api.nasa.gov/mars-photos/api/v1/manifests/${aRover.toLowerCase()}?api_key=xtHbjatP9F0J3DvWg3pYrDPr8KwZYjYXFc4TDWHq`)
+    .then(response => response.json())
+    .then(data => {
+        const manifestData = data.photo_manifest;
+        const landingDate = manifestData.landing_date;
+        const launchDate = manifestData.launch_date;
+        const maxSol = manifestData.max_sol;
+        console.log("Rover Name: " + aRover);
+        console.log("Launch Date: " + launchDate);
+        console.log("Landing Date: " + landingDate);
+        console.log("Maximum Sol: " + maxSol);
+        console.log(data);
+    });
+    
+})
+console.log("Just a test! " + process.env.API_KEY);
+// (rovers) => {
+//     rovers.forEach
+// };
 
 // create content
 const App = (state) => {
