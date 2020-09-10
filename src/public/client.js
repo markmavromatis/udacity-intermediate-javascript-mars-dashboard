@@ -2,11 +2,32 @@
 const HOSTNAME="localhost";
 const PORT=3000;
 
+async function getRoverStats(roverName) {
+    console.log("Inside method getRoverStats...");
+    console.log("Rover name = " + roverName);
+    const results = await fetch(`http://${HOSTNAME}:${PORT}/roverDetails/${roverName}`)
+    .then(response => response.json())
+    .then(data => {
+        console.log("Returning...");
+        console.log(JSON.stringify(data));
+        return {
+            launchDate: data.launchDate,
+            landingDate: data.landingDate,
+            status: data.status,
+            lastDate: data.maxDate
+        }
+    });
+    return results;
+}
+
 let store = {
     user: { name: "Student" },
     apod: '',
     rovers: ['Curiosity', 'Opportunity', 'Spirit'],
-}
+    activeRover: 'Curiosity',
+    roverStats: {}
+};
+
 
 // add our markup to the page
 const root = document.getElementById('root')
@@ -21,30 +42,59 @@ const render = async (root, state) => {
 }
 
 
-// Load manifest data for 3 rovers
-store.rovers.forEach(aRover => {
-    fetch(`http://${HOSTNAME}:${PORT}/roverDetails/${aRover}`)
-    .then(response => response.json())
-    .then(data => {
-        console.log("Rover Name: " + data.name);
-        console.log("Launch Date: " + data.launchDate);
-        console.log("Landing Date: " + data.landingDate);
-        console.log("Status: " + data.status);
-        console.log("Maximum Date: " + data.maxDate);
-    });
+// // Load manifest data for 3 rovers
+// store.rovers.forEach(aRover => {
     
-})
+// })
+
+// function updateRoverButtons(state) {
+//     let { rovers, activeRover } = state
+//     rovers.forEach((aRover) => {
+//         const divClass = aRover == activeRover ? "RoverDivClassSelected" : "RoverDivClassNotSelected"
+//         document.getElementById(`RoverDiv${aRover}`.classname = divClass);
+//     })
+// }
+
+
+async function clickRover(aRover) {
+    // Update activeRover
+    // Update stats
+    const newStats = await getRoverStats(aRover);
+    updateStore(store, { activeRover: aRover, roverStats : newStats });
+}
+
+// 1) Set Rover to "Curiosity"
+async function init() {
+    await clickRover("Curiosity");
+}
+
+// Initialization logic. 
+init();
 
 
 // create content
 const App = (state) => {
-    let { rovers, apod } = state
-
+    let { rovers, activeRover, apod, roverStats } = state
+    let roverDivs = "";
+    rovers.forEach((aRover) => {
+        const divClass = aRover == activeRover ? "RoverDivClassSelected" : "RoverDivClassNotSelected"
+        roverDivs += `<div class="${divClass}" id="RoverDiv${aRover}" onClick='clickRover("${aRover}")'>${aRover}</div>`
+    })
+    console.log("ROVER STATS: " + JSON.stringify(roverStats));
     return `
-        <header></header>
+        <header><title>Mars Rover Dashboard</title></header>
         <main>
             ${Greeting(store.user.name)}
             <section>
+                <div class="RoverButtons">
+                ${roverDivs}
+                </div>
+
+                <div class="roverStats">Launch Date: ${roverStats ? roverStats.launchDate : ""}</div>
+                <div class="roverStats">Landing Date: ${roverStats ? roverStats.landingDate : ""}</div>
+                <div class="roverStats">Status: ${roverStats ? roverStats.status : ""}</div>
+                <div class="roverStats">Last Photo Date: ${roverStats ? roverStats.lastDate : ""}</div>
+
                 <h3>Put things on the page!</h3>
                 <p>Here is an example section.</p>
                 <p>
@@ -85,11 +135,13 @@ const Greeting = (name) => {
 // Example of a pure function that renders infomation requested from the backend
 const ImageOfTheDay = (apod) => {
 
+    // This image fires twice. Prevent it from referring to an invalid image URL if no apod exists.
+    if (!apod) {
+        return;
+    }
+
     // If image does not already exist, or it is not from today -- request it again
     const today = new Date()
-    // const photodate = new Date(apod.date)
-    // console.log("Photo date is: " + photodate);
-    // console.log(photodate.getDate(), today.getDate());
 // 
     // console.log(photodate.getDate() === today.getDate());
     if (!apod || apod.date === today.getDate() ) {

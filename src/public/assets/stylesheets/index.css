@@ -20,6 +20,31 @@ footer {
   /* footer styles */
 }
 
+/* Row of Rover Buttons */
+.RoverButtons {
+  margin-bottom: 10px;
+}
+
+/* Rover Buttons Styling (Selected Style) */
+.RoverDivClassSelected  {
+  background-color: skyblue;
+  display: inline;
+  padding: 10px;
+}
+
+/* Rover Buttons Styling (Unselected Style) */
+.RoverDivClassNotSelected  {
+  background-color: lightgray;
+  display: inline;
+  padding: 10px;
+}
+
+/* Row of Rover stats (launch date, maximum date, etc.) */
+.roverStats {
+  display: inline;
+  padding: 5px;
+}
+
 /* -------------------  TABLET  --------------------- */
 @media (min-width: 768px) {
   /* use mobile */
