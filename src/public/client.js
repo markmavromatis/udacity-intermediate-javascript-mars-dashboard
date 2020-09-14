@@ -20,6 +20,24 @@ async function getRoverStats(roverName) {
     return results;
 }
 
+async function getImageUrls(roverName, searchDate, pageNumber) {
+    console.log("Inside method getImageUrls...");
+    console.log("Rover name = " + roverName);
+    console.log("Search date = " + searchDate);
+    const results = await fetch(`http://${HOSTNAME}:${PORT}/photoUrls/${roverName}/${searchDate}/${pageNumber}`)
+    .then(response => response.json())
+    .then(data => {
+        // console.log("Returning...");
+        // console.log(JSON.stringify(data));
+        const urlData = [];
+        data.forEach(dataRecord => {
+            urlData.push({imageId: dataRecord.id, imageUrl: dataRecord.src})
+        })
+        return urlData;
+    });
+    return results;
+}
+
 let store = {
     user: { name: "Student" },
     apod: '',
@@ -56,11 +74,39 @@ const render = async (root, state) => {
 // }
 
 
+// Click event handler for Rover button
 async function clickRover(aRover) {
     // Update activeRover
     // Update stats
     const newStats = await getRoverStats(aRover);
     updateStore(store, { activeRover: aRover, roverStats : newStats });
+}
+
+// Click event handler for Search button
+async function clickSearch(roverName, searchDate) {
+    if (!searchDate) {
+        console.log("Search date is null!");
+    } else {
+        console.log("Search date: " + searchDate);
+        // Remove any existing images
+        const imageUrlsDiv = document.getElementById("SearchResults");
+        while (imageUrlsDiv.hasChildNodes()) {
+            imageUrlsDiv.removeChild(imageUrlsDiv.childNodes[0]);
+        }
+        const responseUrls = await getImageUrls(roverName, searchDate, 2);
+        console.log("Add image URLs..." + JSON.stringify(responseUrls));
+        responseUrls.forEach(responseUrl => {
+            console.log(responseUrl.imageUrl);
+            // Draw the image
+            // newDiv.setAttribute("class", "grid-item");
+            const image = document.createElement("img");
+            image.setAttribute("width", "300px");
+            image.setAttribute("height", "300px");
+            image.setAttribute("src", responseUrl.imageUrl);
+            imageUrlsDiv.appendChild(image);
+        })
+            // imageUrlsDiv.chi
+    }
 }
 
 // 1) Set Rover to "Curiosity"
@@ -94,7 +140,12 @@ const App = (state) => {
                 <div class="roverStats">Landing Date: ${roverStats ? roverStats.landingDate : ""}</div>
                 <div class="roverStats">Status: ${roverStats ? roverStats.status : ""}</div>
                 <div class="roverStats">Last Photo Date: ${roverStats ? roverStats.lastDate : ""}</div>
-
+                <div>
+                Image Search Date:
+                <input id="searchDate" type="date"/>
+                <div id="PagesDiv"></div>
+                <button id="SearchButton" onClick='clickSearch("${store.activeRover}", document.getElementById("searchDate").value)'/></div>
+                <div id="SearchResults"></div>
                 <h3>Put things on the page!</h3>
                 <p>Here is an example section.</p>
                 <p>
