@@ -8,13 +8,27 @@ async function getRoverStats(roverName) {
     const results = await fetch(`http://${HOSTNAME}:${PORT}/roverDetails/${roverName}`)
     .then(response => response.json())
     .then(data => {
-        console.log("Returning...");
-        console.log(JSON.stringify(data));
         return {
             launchDate: data.launchDate,
             landingDate: data.landingDate,
             status: data.status,
             lastDate: data.maxDate
+        }
+    });
+    return results;
+}
+
+async function getImageStats(roverName, searchDate) {
+    console.log("Inside method getImageStats...");
+    console.log("Rover name = " + roverName);
+    console.log("Search date = " + searchDate);
+    const results = await fetch(`http://${HOSTNAME}:${PORT}/photoStats/${roverName}/${searchDate}`)
+    .then(response => response.json())
+    .then(data => {
+        // console.log("Returning...");
+        // console.log(JSON.stringify(data));
+        return {
+            pages: data.pages,
         }
     });
     return results;
@@ -43,6 +57,7 @@ let store = {
     apod: '',
     rovers: ['Curiosity', 'Opportunity', 'Spirit'],
     activeRover: 'Curiosity',
+    searchDate: '2020-01-01',
     roverStats: {}
 };
 
@@ -73,40 +88,83 @@ const render = async (root, state) => {
 //     })
 // }
 
+async function onSearchDateChange() {
+    const newSearchDate = document.getElementById("searchDate").value;
+    const roverName = store.activeRover;
+    console.log("Inside method onSearchDateChange...");
+    // console.log("New search date = " + newSearchDate);
+    // console.log("Rover name = " + store.activeRover);
+    updateStore(store, { searchDate : newSearchDate });
+
+    // Clear Pages Div
+    const pagesDiv = document.getElementById("PagesDiv");
+    while (pagesDiv.hasChildNodes()) {
+        pagesDiv.removeChild(pagesDiv.childNodes[0]);
+    }
+
+    // How many pages?
+    const imageStats = await getImageStats(roverName, newSearchDate);
+    console.log("# PAGES = " + JSON.stringify(imageStats));
+    const totalPages = imageStats.pages;
+
+
+    // Render Pages div
+    const pagesDropdown = document.createElement("select");
+    pagesDropdown.setAttribute("id", "PagesDropdown");
+    pagesDropdown.setAttribute("onchange", `retrieveImages('${roverName}', '${newSearchDate}', document.getElementById("PagesDropdown").value)`);
+    for (let i = 0; i < totalPages; i++) {
+        const pagesOption = document.createElement("option");
+        const pageNumber = i + 1;
+        pagesOption.setAttribute("value", pageNumber);
+        pagesOption.innerHTML = pageNumber;
+        pagesDropdown.appendChild(pagesOption);
+    }
+
+    const pagesLabel = document.createElement("label");
+    pagesLabel.innerHTML = "Pages: ";
+    pagesDiv.appendChild(pagesLabel);
+    pagesDiv.appendChild(pagesDropdown);
+
+    // Simulate selection of page 1
+    retrieveImages(roverName, newSearchDate, 1);
+
+}
+
 
 // Click event handler for Rover button
-async function clickRover(aRover) {
+async function clickRover(roverName) {
     // Update activeRover
     // Update stats
-    const newStats = await getRoverStats(aRover);
-    updateStore(store, { activeRover: aRover, roverStats : newStats });
+    console.log("Inside method clickRover...");
+    const newStats = await getRoverStats(roverName);
+    const newSearchDate = newStats.lastDate;
+    updateStore(store, { activeRover: roverName, roverStats : newStats, searchDate : newSearchDate});
+    console.log("Updating search date field.... (CLICKROVER)")
+    // document.getElementById("searchDate").value = "2020-10-10";
+    onSearchDateChange();
 }
 
 // Click event handler for Search button
-async function clickSearch(roverName, searchDate) {
-    if (!searchDate) {
-        console.log("Search date is null!");
-    } else {
-        console.log("Search date: " + searchDate);
-        // Remove any existing images
-        const imageUrlsDiv = document.getElementById("SearchResults");
-        while (imageUrlsDiv.hasChildNodes()) {
-            imageUrlsDiv.removeChild(imageUrlsDiv.childNodes[0]);
-        }
-        const responseUrls = await getImageUrls(roverName, searchDate, 2);
-        console.log("Add image URLs..." + JSON.stringify(responseUrls));
-        responseUrls.forEach(responseUrl => {
-            console.log(responseUrl.imageUrl);
-            // Draw the image
-            // newDiv.setAttribute("class", "grid-item");
-            const image = document.createElement("img");
-            image.setAttribute("width", "300px");
-            image.setAttribute("height", "300px");
-            image.setAttribute("src", responseUrl.imageUrl);
-            imageUrlsDiv.appendChild(image);
-        })
-            // imageUrlsDiv.chi
+async function retrieveImages(roverName, searchDate, pageNumber) {
+    console.log("Inside method retrieveImages...");
+    console.log("Rover name = " + roverName);
+    console.log("Search Date = " + searchDate);
+    console.log("Page Number = " + pageNumber);
+    const imageUrlsDiv = document.getElementById("SearchResults");
+    while (imageUrlsDiv.hasChildNodes()) {
+        imageUrlsDiv.removeChild(imageUrlsDiv.childNodes[0]);
     }
+    const responseUrls = await getImageUrls(roverName, searchDate, pageNumber);
+    // console.log("Add image URLs..." + JSON.stringify(responseUrls));
+    responseUrls.forEach(responseUrl => {
+
+        // Draw the image
+        const image = document.createElement("img");
+        image.setAttribute("width", "300px");
+        image.setAttribute("height", "300px");
+        image.setAttribute("src", responseUrl.imageUrl);
+        imageUrlsDiv.appendChild(image);
+    })
 }
 
 // 1) Set Rover to "Curiosity"
@@ -114,8 +172,6 @@ async function init() {
     await clickRover("Curiosity");
 }
 
-// Initialization logic. 
-init();
 
 
 // create content
@@ -142,26 +198,15 @@ const App = (state) => {
                 <div class="roverStats">Last Photo Date: ${roverStats ? roverStats.lastDate : ""}</div>
                 <div>
                 Image Search Date:
-                <input id="searchDate" type="date"/>
+                <input id="searchDate" type="date" onChange="onSearchDateChange()" value="${store.searchDate}" />
                 <div id="PagesDiv"></div>
-                <button id="SearchButton" onClick='clickSearch("${store.activeRover}", document.getElementById("searchDate").value)'/></div>
                 <div id="SearchResults"></div>
-                <h3>Put things on the page!</h3>
-                <p>Here is an example section.</p>
-                <p>
-                    One of the most popular websites at NASA is the Astronomy Picture of the Day. In fact, this website is one of
-                    the most popular websites across all federal agencies. It has the popular appeal of a Justin Bieber video.
-                    This endpoint structures the APOD imagery and associated metadata so that it can be repurposed for other
-                    applications. In addition, if the concept_tags parameter is set to True, then keywords derived from the image
-                    explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds;
-                    but generally help with discoverability of relevant imagery.
-                </p>
-                ${ImageOfTheDay(apod)}
             </section>
         </main>
         <footer></footer>
     `
 }
+init();
 
 // listening for load event because page should load before any JS is called
 window.addEventListener('load', () => {
