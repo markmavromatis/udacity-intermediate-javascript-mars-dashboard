@@ -12,6 +12,7 @@ const app = express()
 const port = 3000
 
 const API_KEY = process.env.API_KEY;
+const NASA_API_BASE_URL = "https://api.nasa.gov/mars-photos/api/v1/";
 const ROVER_NAMES = List(['Curiosity', 'Opportunity', 'Spirit'])
 
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -44,9 +45,9 @@ class Rover {
 
 // Query NASA API for rover details and store data in the Rover class
 async function getRoverDetails(roverName) {
-    console.log("Querying Rover details for rover: " + roverName);
+    console.log("Querying NASA API for rover manifest: " + roverName);
 
-    const newRover = await fetch(`https://api.nasa.gov/mars-photos/api/v1/manifests/${roverName.toLowerCase()}?api_key=${API_KEY}`)
+    const newRover = await fetch(`${NASA_API_BASE_URL}/manifests/${roverName.toLowerCase()}?api_key=${API_KEY}`)
     .then(response => response.json())
     .then(async (data) => {
         const manifestData = data.photo_manifest;
@@ -59,9 +60,9 @@ async function getRoverDetails(roverName) {
 // Query NASA API for the photo URLs for a rover/data/page number.
 // Return a list of URLs for the images.
 async function getRoverPhotoUrls(rover, photoDate, page) {
-    console.log(`Querying Rover photo details for rover/date: ${rover.name} / ${photoDate}`);
+    console.log(`Querying NASA API for photo URLs for rover/date/page: ${rover.name} / ${photoDate} / ${page}`);
 
-    const url = `https://api.nasa.gov/mars-photos/api/v1/rovers/${rover.name.toLowerCase()}/photos?earth_date=${photoDate}&page=${page}&api_key=${API_KEY}`;
+    const url = `${NASA_API_BASE_URL}/rovers/${rover.name.toLowerCase()}/photos?earth_date=${photoDate}&page=${page}&api_key=${API_KEY}`;
 
     const photoUrls = await fetch(url)
     .then(response => response.json())
