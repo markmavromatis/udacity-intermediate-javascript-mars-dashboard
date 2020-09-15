@@ -75,19 +75,6 @@ const render = async (root, state) => {
 }
 
 
-// // Load manifest data for 3 rovers
-// store.rovers.forEach(aRover => {
-    
-// })
-
-// function updateRoverButtons(state) {
-//     let { rovers, activeRover } = state
-//     rovers.forEach((aRover) => {
-//         const divClass = aRover == activeRover ? "RoverDivClassSelected" : "RoverDivClassNotSelected"
-//         document.getElementById(`RoverDiv${aRover}`.classname = divClass);
-//     })
-// }
-
 async function onSearchDateChange() {
     const newSearchDate = document.getElementById("searchDate").value;
     const roverName = store.activeRover;
@@ -191,15 +178,19 @@ const App = (state) => {
                 <div class="RoverButtons">
                 ${roverDivs}
                 </div>
-
-                <div class="roverStats">Launch Date: ${roverStats ? roverStats.launchDate : ""}</div>
-                <div class="roverStats">Landing Date: ${roverStats ? roverStats.landingDate : ""}</div>
-                <div class="roverStats">Status: ${roverStats ? roverStats.status : ""}</div>
-                <div class="roverStats">Last Photo Date: ${roverStats ? roverStats.lastDate : ""}</div>
-                <div>
-                Image Search Date:
-                <input id="searchDate" type="date" onChange="onSearchDateChange()" value="${store.searchDate}" />
-                <div id="PagesDiv"></div>
+                <div id="StatsRow" class="roverStatsRow">
+                    <div class="roverStats">Launch Date: ${roverStats ? roverStats.launchDate : ""}</div>
+                    <div class="roverStats">Landing Date: ${roverStats ? roverStats.landingDate : ""}</div>
+                    <div class="roverStats">Status: ${roverStats ? roverStats.status : ""}</div>
+                    <div class="roverStats">Last Photo Date: ${roverStats ? roverStats.lastDate : ""}</div>
+                </div>
+                <div id="SearchCriteria" class="searchCriteriaRow">
+                    <div id="SearchDate" class="searchDateDiv">
+                    Image Date:
+                    <input id="searchDate" type="date" onChange="onSearchDateChange()" value="${store.searchDate}" min="${roverStats.landingDate}" max="${roverStats.lastDate}"/>
+                    </div>
+                    <div id="PagesDiv" class="pagesDiv"></div>
+                </div>
                 <div id="SearchResults"></div>
             </section>
         </main>

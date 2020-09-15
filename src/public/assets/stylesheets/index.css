@@ -20,6 +20,26 @@ footer {
   /* footer styles */
 }
 
+.roverStatsRow {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-color: lightgray;
+}
+
+.searchCriteriaRow {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-color: lightgray;
+}
+
+.searchDateDiv {
+  display: inline-block;
+}
+
+.pagesDiv {
+  display: inline-block;
+  padding-left: 50px;
+}
 /* Row of Rover Buttons */
 .RoverButtons {
   margin-bottom: 10px;
