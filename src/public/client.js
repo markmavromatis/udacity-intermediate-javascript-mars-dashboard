@@ -36,8 +36,9 @@ async function getImageStats(roverName, searchDate) {
 
 async function getImageUrls(roverName, searchDate, pageNumber) {
     console.log("Inside method getImageUrls...");
-    console.log("Rover name = " + roverName);
-    console.log("Search date = " + searchDate);
+    console.log("\tRover name = " + roverName);
+    console.log("\tSearch date = " + searchDate);
+    console.log("\tPage = " + pageNumber);
     const results = await fetch(`http://${HOSTNAME}:${PORT}/photoUrls/${roverName}/${searchDate}/${pageNumber}`)
     .then(response => response.json())
     .then(data => {
@@ -53,12 +54,10 @@ async function getImageUrls(roverName, searchDate, pageNumber) {
 }
 
 let store = {
-    user: { name: "Student" },
-    apod: '',
-    rovers: ['Curiosity', 'Opportunity', 'Spirit'],
+    rovers: Immutable.List(['Curiosity', 'Opportunity', 'Spirit']),
     activeRover: 'Curiosity',
     searchDate: '2020-01-01',
-    roverStats: {}
+    roverStats: Immutable.Map()
 };
 
 
@@ -66,8 +65,11 @@ let store = {
 const root = document.getElementById('root')
 
 const updateStore = (store, newState) => {
-    store = Object.assign(store, newState)
-    render(root, store)
+    // console.log("Updating store: " + JSON.stringify(newState));
+    // console.log("STORE DETAILS (BEFORE): " + JSON.stringify(store));
+    store = Object.assign(store, newState);
+    // console.log("STORE DETAILS (AFTER): " + JSON.stringify(store));
+    render(root, store);
 }
 
 const render = async (root, state) => {
@@ -78,7 +80,7 @@ const render = async (root, state) => {
 async function onSearchDateChange() {
     const newSearchDate = document.getElementById("searchDate").value;
     const roverName = store.activeRover;
-    console.log("Inside method onSearchDateChange...");
+    // console.log("Inside method onSearchDateChange...");
     // console.log("New search date = " + newSearchDate);
     // console.log("Rover name = " + store.activeRover);
     updateStore(store, { searchDate : newSearchDate });
@@ -91,7 +93,6 @@ async function onSearchDateChange() {
 
     // How many pages?
     const imageStats = await getImageStats(roverName, newSearchDate);
-    console.log("# PAGES = " + JSON.stringify(imageStats));
     const totalPages = imageStats.pages;
 
 
@@ -122,21 +123,18 @@ async function onSearchDateChange() {
 async function clickRover(roverName) {
     // Update activeRover
     // Update stats
-    console.log("Inside method clickRover...");
     const newStats = await getRoverStats(roverName);
     const newSearchDate = newStats.lastDate;
-    updateStore(store, { activeRover: roverName, roverStats : newStats, searchDate : newSearchDate});
-    console.log("Updating search date field.... (CLICKROVER)")
-    // document.getElementById("searchDate").value = "2020-10-10";
+    updateStore(store, {activeRover: roverName, roverStats : newStats, searchDate : newSearchDate});
     onSearchDateChange();
 }
 
 // Click event handler for Search button
 async function retrieveImages(roverName, searchDate, pageNumber) {
-    console.log("Inside method retrieveImages...");
-    console.log("Rover name = " + roverName);
-    console.log("Search Date = " + searchDate);
-    console.log("Page Number = " + pageNumber);
+    // console.log("Inside method retrieveImages...");
+    // console.log("Rover name = " + roverName);
+    // console.log("Search Date = " + searchDate);
+    // console.log("Page Number = " + pageNumber);
     const imageUrlsDiv = document.getElementById("SearchResults");
     while (imageUrlsDiv.hasChildNodes()) {
         imageUrlsDiv.removeChild(imageUrlsDiv.childNodes[0]);
@@ -163,17 +161,19 @@ async function init() {
 
 // create content
 const App = (state) => {
-    let { rovers, activeRover, apod, roverStats } = state
+    let { rovers, activeRover, roverStats } = state
+    rovers = state.rovers;
+    roverStats = state.roverStats;
+    activeRover = state.activeRover;
+
     let roverDivs = "";
-    rovers.forEach((aRover) => {
+    rovers.map((aRover) => {
         const divClass = aRover == activeRover ? "RoverDivClassSelected" : "RoverDivClassNotSelected"
         roverDivs += `<div class="${divClass}" id="RoverDiv${aRover}" onClick='clickRover("${aRover}")'>${aRover}</div>`
     })
-    console.log("ROVER STATS: " + JSON.stringify(roverStats));
     return `
         <header><title>Mars Rover Dashboard</title></header>
         <main>
-            ${Greeting(store.user.name)}
             <section>
                 <div class="RoverButtons">
                 ${roverDivs}
