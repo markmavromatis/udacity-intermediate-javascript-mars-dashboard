@@ -2,56 +2,8 @@
 const HOSTNAME="localhost";
 const PORT=3000;
 
-async function getRoverStats(roverName) {
-    console.log("Inside method getRoverStats...");
-    console.log("Rover name = " + roverName);
-    const results = await fetch(`http://${HOSTNAME}:${PORT}/roverDetails/${roverName}`)
-    .then(response => response.json())
-    .then(data => {
-        return {
-            launchDate: data.launchDate,
-            landingDate: data.landingDate,
-            status: data.status,
-            lastDate: data.maxDate
-        }
-    });
-    return results;
-}
 
-async function getImageStats(roverName, searchDate) {
-    console.log("Inside method getImageStats...");
-    console.log("Rover name = " + roverName);
-    console.log("Search date = " + searchDate);
-    const results = await fetch(`http://${HOSTNAME}:${PORT}/photoStats/${roverName}/${searchDate}`)
-    .then(response => response.json())
-    .then(data => {
-        // console.log("Returning...");
-        // console.log(JSON.stringify(data));
-        return {
-            pages: data.pages,
-        }
-    });
-    return results;
-}
 
-async function getImageUrls(roverName, searchDate, pageNumber) {
-    console.log("Inside method getImageUrls...");
-    console.log("\tRover name = " + roverName);
-    console.log("\tSearch date = " + searchDate);
-    console.log("\tPage = " + pageNumber);
-    const results = await fetch(`http://${HOSTNAME}:${PORT}/photoUrls/${roverName}/${searchDate}/${pageNumber}`)
-    .then(response => response.json())
-    .then(data => {
-        // console.log("Returning...");
-        // console.log(JSON.stringify(data));
-        const urlData = [];
-        data.forEach(dataRecord => {
-            urlData.push({imageId: dataRecord.id, imageUrl: dataRecord.src})
-        })
-        return urlData;
-    });
-    return results;
-}
 
 let store = {
     rovers: Immutable.List(['Curiosity', 'Opportunity', 'Spirit']),
@@ -76,6 +28,15 @@ const render = async (root, state) => {
     root.innerHTML = App(state)
 }
 
+// Remove previously added div children.
+// Use this to clear previously added image URLs and page dropdown
+function clearDivChildren(aDivTag) {
+    while (aDivTag.hasChildNodes()) {
+        aDivTag.removeChild(aDivTag.childNodes[0]);
+    }
+
+}
+
 
 async function onSearchDateChange() {
     const newSearchDate = document.getElementById("searchDate").value;
@@ -87,30 +48,14 @@ async function onSearchDateChange() {
 
     // Clear Pages Div
     const pagesDiv = document.getElementById("PagesDiv");
-    while (pagesDiv.hasChildNodes()) {
-        pagesDiv.removeChild(pagesDiv.childNodes[0]);
-    }
+    clearDivChildren(pagesDiv);
 
     // How many pages?
-    const imageStats = await getImageStats(roverName, newSearchDate);
-    const totalPages = imageStats.pages;
-
-
-    // Render Pages div
-    const pagesDropdown = document.createElement("select");
-    pagesDropdown.setAttribute("id", "PagesDropdown");
-    pagesDropdown.setAttribute("onchange", `retrieveImages('${roverName}', '${newSearchDate}', document.getElementById("PagesDropdown").value)`);
-    for (let i = 0; i < totalPages; i++) {
-        const pagesOption = document.createElement("option");
-        const pageNumber = i + 1;
-        pagesOption.setAttribute("value", pageNumber);
-        pagesOption.innerHTML = pageNumber;
-        pagesDropdown.appendChild(pagesOption);
-    }
-
     const pagesLabel = document.createElement("label");
     pagesLabel.innerHTML = "Pages: ";
     pagesDiv.appendChild(pagesLabel);
+
+    const pagesDropdown = await generatePageDropdown(roverName, newSearchDate, getImageStats)
     pagesDiv.appendChild(pagesDropdown);
 
     // Simulate selection of page 1
@@ -135,10 +80,11 @@ async function retrieveImages(roverName, searchDate, pageNumber) {
     // console.log("Rover name = " + roverName);
     // console.log("Search Date = " + searchDate);
     // console.log("Page Number = " + pageNumber);
+
+
     const imageUrlsDiv = document.getElementById("SearchResults");
-    while (imageUrlsDiv.hasChildNodes()) {
-        imageUrlsDiv.removeChild(imageUrlsDiv.childNodes[0]);
-    }
+    clearDivChildren(imageUrlsDiv);
+
     const responseUrls = await getImageUrls(roverName, searchDate, pageNumber);
     // console.log("Add image URLs..." + JSON.stringify(responseUrls));
     responseUrls.forEach(responseUrl => {
@@ -163,7 +109,7 @@ function createSingleRoverHtmlDiv(roverName, activeRoverName) {
     return `<div class="${divClass}" id="RoverDiv${roverName}" onClick='clickRover("${roverName}")'>${roverName}</div>`
 }
 
-// Higher-order function to generate divs for each rover
+// Higher-order function to generate divs HTML for each rover
 function generateRoverHtmlDivs(roverNames, activeRoverName, callback) {
     let roversHtml = "";
     roverNames.forEach(roverName => {
@@ -172,14 +118,33 @@ function generateRoverHtmlDivs(roverNames, activeRoverName, callback) {
     return roversHtml;
 }
 
+// Higher-order function to generate the pages dropdown HTML elements
+// callback is a function to retrieve the # of image pages
+async function generatePageDropdown(roverName, searchDate, callback) {
+    const imageStats = await callback(roverName, searchDate);
+    const totalPages = imageStats.pages;
+
+    const pagesDropdown = document.createElement("select");
+    pagesDropdown.setAttribute("id", "PagesDropdown");
+    pagesDropdown.setAttribute("onchange", `retrieveImages('${roverName}', '${searchDate}', document.getElementById("PagesDropdown").value)`);
+    for (let i = 0; i < totalPages; i++) {
+        const pagesOption = document.createElement("option");
+        const pageNumber = i + 1;
+        pagesOption.setAttribute("value", pageNumber);
+        pagesOption.innerHTML = pageNumber;
+        pagesDropdown.appendChild(pagesOption);
+    }
+
+    return pagesDropdown;
+}
+
+
 // create content
 const App = (state) => {
     let { rovers, activeRover, roverStats } = state
     rovers = state.rovers;
     roverStats = state.roverStats;
     activeRover = state.activeRover;
-
-    // const roverDivs = 
 
     return `
         <header><title>Mars Rover Dashboard</title></header>
@@ -214,9 +179,62 @@ window.addEventListener('load', () => {
     render(root, store)
 })
 
-// ------------------------------------------------------  COMPONENTS
-
 
 // ------------------------------------------------------  API CALLS
 
+// Download Mars Rover metadata from server
+async function getRoverStats(roverName) {
+    console.log("Inside method getRoverStats...");
+    console.log("Rover name = " + roverName);
+    const results = await fetch(`http://${HOSTNAME}:${PORT}/roverDetails/${roverName}`)
+    .then(response => response.json())
+    .then(data => {
+        return {
+            launchDate: data.launchDate,
+            landingDate: data.landingDate,
+            status: data.status,
+            lastDate: data.maxDate
+        }
+    });
+    return results;
+}
 
+
+
+
+// Download Mars Rover image stats (total images / day) from server
+async function getImageStats(roverName, searchDate) {
+    console.log("Inside method getImageStats...");
+    console.log("Rover name = " + roverName);
+    console.log("Search date = " + searchDate);
+    const results = await fetch(`http://${HOSTNAME}:${PORT}/photoStats/${roverName}/${searchDate}`)
+    .then(response => response.json())
+    .then(data => {
+        // console.log("Returning...");
+        // console.log(JSON.stringify(data));
+        return {
+            pages: data.pages,
+        }
+    });
+    return results;
+}
+
+// Download Mars Rover image URLs for a certain date / page from server
+async function getImageUrls(roverName, searchDate, pageNumber) {
+    console.log("Inside method getImageUrls...");
+    console.log("\tRover name = " + roverName);
+    console.log("\tSearch date = " + searchDate);
+    console.log("\tPage = " + pageNumber);
+    const results = await fetch(`http://${HOSTNAME}:${PORT}/photoUrls/${roverName}/${searchDate}/${pageNumber}`)
+    .then(response => response.json())
+    .then(data => {
+        // console.log("Returning...");
+        // console.log(JSON.stringify(data));
+        const urlData = [];
+        data.forEach(dataRecord => {
+            urlData.push({imageId: dataRecord.id, imageUrl: dataRecord.src})
+        })
+        return urlData;
+    });
+    return results;
+}
