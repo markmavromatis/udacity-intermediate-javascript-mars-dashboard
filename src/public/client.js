@@ -17,10 +17,7 @@ let store = {
 const root = document.getElementById('root')
 
 const updateStore = (store, newState) => {
-    // console.log("Updating store: " + JSON.stringify(newState));
-    // console.log("STORE DETAILS (BEFORE): " + JSON.stringify(store));
     store = Object.assign(store, newState);
-    // console.log("STORE DETAILS (AFTER): " + JSON.stringify(store));
     render(root, store);
 }
 
@@ -41,9 +38,6 @@ function clearDivChildren(aDivTag) {
 async function onSearchDateChange() {
     const newSearchDate = document.getElementById("searchDate").value;
     const roverName = store.activeRover;
-    // console.log("Inside method onSearchDateChange...");
-    // console.log("New search date = " + newSearchDate);
-    // console.log("Rover name = " + store.activeRover);
     updateStore(store, { searchDate : newSearchDate });
 
     // Clear Pages Div
@@ -66,33 +60,26 @@ async function onSearchDateChange() {
 
 // Click event handler for Rover button
 async function clickRover(roverName) {
-    // Update activeRover
     // Update stats
     const newStats = await getRoverStats(roverName);
     const newSearchDate = newStats.lastDate;
     updateStore(store, {activeRover: roverName, roverStats : newStats, searchDate : newSearchDate});
+    // Reset the search date
     onSearchDateChange();
 }
 
 // Click event handler for Search button
 async function retrieveImages(roverName, searchDate, pageNumber) {
-    // console.log("Inside method retrieveImages...");
-    // console.log("Rover name = " + roverName);
-    // console.log("Search Date = " + searchDate);
-    // console.log("Page Number = " + pageNumber);
-
 
     const imageUrlsDiv = document.getElementById("SearchResults");
     clearDivChildren(imageUrlsDiv);
 
     const responseUrls = await getImageUrls(roverName, searchDate, pageNumber);
-    // console.log("Add image URLs..." + JSON.stringify(responseUrls));
     responseUrls.forEach(responseUrl => {
 
         // Draw the image
         const image = document.createElement("img");
-        image.setAttribute("width", "300px");
-        image.setAttribute("height", "300px");
+        image.setAttribute("class", "marsImage")
         image.setAttribute("src", responseUrl.imageUrl);
         imageUrlsDiv.appendChild(image);
     })
@@ -105,7 +92,7 @@ async function init() {
 
 // Create HTML Div button for the rover. Determine coloring of button based on whether the rover is 'active'.
 function createSingleRoverHtmlDiv(roverName, activeRoverName) {
-    const divClass = roverName == activeRoverName ? "RoverDivClassSelected" : "RoverDivClassNotSelected";
+    const divClass = roverName == activeRoverName ? "RoverDivClassSelected roverDiv" : "RoverDivClassNotSelected roverDiv";
     return `<div class="${divClass}" id="RoverDiv${roverName}" onClick='clickRover("${roverName}")'>${roverName}</div>`
 }
 
@@ -126,6 +113,7 @@ async function generatePageDropdown(roverName, searchDate, callback) {
 
     const pagesDropdown = document.createElement("select");
     pagesDropdown.setAttribute("id", "PagesDropdown");
+    pagesDropdown.setAttribute("class", "pageDropdownDiv");
     pagesDropdown.setAttribute("onchange", `retrieveImages('${roverName}', '${searchDate}', document.getElementById("PagesDropdown").value)`);
     for (let i = 0; i < totalPages; i++) {
         const pagesOption = document.createElement("option");
@@ -154,15 +142,15 @@ const App = (state) => {
                 ${generateRoverHtmlDivs(rovers, activeRover, createSingleRoverHtmlDiv)}
                 </div>
                 <div id="StatsRow" class="roverStatsRow">
-                    <div class="roverStats">Launch Date: ${roverStats ? roverStats.launchDate : ""}</div>
-                    <div class="roverStats">Landing Date: ${roverStats ? roverStats.landingDate : ""}</div>
-                    <div class="roverStats">Status: ${roverStats ? roverStats.status : ""}</div>
-                    <div class="roverStats">Last Photo Date: ${roverStats ? roverStats.lastDate : ""}</div>
+                    <div class="roverStats"><label class="roverStatsLabel">Launch Date:</label><label class="roverStatsValue">${roverStats ? roverStats.launchDate : ""}</label></div>
+                    <div class="roverStats"><label class="roverStatsLabel">Landing Date:</label><label class="roverStatsValue">${roverStats ? roverStats.landingDate : ""}</label></div>
+                    <div class="roverStats"><label class="roverStatsLabel">Status:</label><label class="roverStatsValue">${roverStats ? roverStats.status : ""}</label></div>
+                    <div class="roverStats"><label class="roverStatsLabel">Last Photo Date:</label><label class="roverStatsValue">${roverStats ? roverStats.lastDate : ""}</label></div>
                 </div>
                 <div id="SearchCriteria" class="searchCriteriaRow">
                     <div id="SearchDate" class="searchDateDiv">
-                    Image Date:
-                    <input id="searchDate" type="date" onChange="onSearchDateChange()" value="${store.searchDate}" min="${roverStats.landingDate}" max="${roverStats.lastDate}"/>
+                    <label class="searchDateDiv">Image Date:</label>
+                    <input class="searchDateDiv" id="searchDate" type="date" onChange="onSearchDateChange()" value="${store.searchDate}" min="${roverStats.landingDate}" max="${roverStats.lastDate}"/>
                     </div>
                     <div id="PagesDiv" class="pagesDiv"></div>
                 </div>
