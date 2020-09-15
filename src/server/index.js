@@ -12,6 +12,7 @@ const app = express()
 const port = 3000
 
 const API_KEY = process.env.API_KEY;
+const ROVER_NAMES = List(['Curiosity', 'Opportunity', 'Spirit'])
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
@@ -21,6 +22,7 @@ app.use('/', express.static(path.join(__dirname, '../public')))
 // your API calls
 console.log("Using API key: " + API_KEY);
 
+// Class to model the Mars rovers and their launch/landing/camera stats
 class Rover {
     constructor(manifestData) {
         this.name = manifestData.name;
@@ -29,7 +31,8 @@ class Rover {
         this.status = manifestData.status;
         this.maxDate = manifestData.max_date;
 
-        // Setup the photos information for the maximum date
+        // Setup the photo metadata (counts) for all dates
+        // since this information is included in the manifest data.
         this.photosData = {};
         manifestData.photos.forEach((photoRecord) => {
             this.photosData[photoRecord.earth_date] = {};
@@ -39,6 +42,7 @@ class Rover {
     }
 }
 
+// Query NASA API for rover details and store data in the Rover class
 async function getRoverDetails(roverName) {
     console.log("Querying Rover details for rover: " + roverName);
 
@@ -52,6 +56,8 @@ async function getRoverDetails(roverName) {
     return newRover;
 }
 
+// Query NASA API for the photo URLs for a rover/data/page number.
+// Return a list of URLs for the images.
 async function getRoverPhotoUrls(rover, photoDate, page) {
     console.log(`Querying Rover photo details for rover/date: ${rover.name} / ${photoDate}`);
 
@@ -68,10 +74,6 @@ async function getRoverPhotoUrls(rover, photoDate, page) {
     return photoUrls;
 }
 
-const ROVER_NAMES = List(['Curiosity', 'Opportunity', 'Spirit'])
-let rovers = {};
-console.log("Loading Rover details...");
-
 // Initialize data for all Rovers
 async function init() {
     for (name of ROVER_NAMES) {
@@ -79,12 +81,15 @@ async function init() {
     }
 }
 
-
+let rovers = {};
+console.log("Loading Rover details...");
 init().then(() => {
-    console.log(`Loaded data for all ${ROVER_NAMES.length} rovers!`);
+    console.log(`Loaded data for all ${ROVER_NAMES.size} rovers!`);
 });
 
+// Routers for web services
 
+// Query manifest details for a specific Mars Rover.
 app.get('/roverDetails/:roverName', async (req, res) => {
     const roverName = req.params.roverName;
 
@@ -102,6 +107,7 @@ app.get('/roverDetails/:roverName', async (req, res) => {
     }
 })
 
+// Query image stats (count) for photos taken by a Mars Rover on a specified date.
 app.get('/photoStats/:roverName/:photosDate', async (req, res) => {
     const roverName = req.params.roverName;
     const photosDate = req.params.photosDate;
@@ -120,6 +126,7 @@ app.get('/photoStats/:roverName/:photosDate', async (req, res) => {
     }
 })
 
+// Query image URLs for a page (25) photos taken by a Mars Rover on a specified date.
 app.get('/photoUrls/:roverName/:photosDate/:pageNumber', async (req, res) => {
     const roverName = req.params.roverName;
     const photosDate = req.params.photosDate;
