@@ -157,7 +157,20 @@ async function init() {
     await clickRover("Curiosity");
 }
 
+// Create HTML Div button for the rover. Determine coloring of button based on whether the rover is 'active'.
+function createSingleRoverHtmlDiv(roverName, activeRoverName) {
+    const divClass = roverName == activeRoverName ? "RoverDivClassSelected" : "RoverDivClassNotSelected";
+    return `<div class="${divClass}" id="RoverDiv${roverName}" onClick='clickRover("${roverName}")'>${roverName}</div>`
+}
 
+// Higher-order function to generate divs for each rover
+function generateRoverHtmlDivs(roverNames, activeRoverName, callback) {
+    let roversHtml = "";
+    roverNames.forEach(roverName => {
+        roversHtml += callback(roverName, activeRoverName);
+    })
+    return roversHtml;
+}
 
 // create content
 const App = (state) => {
@@ -166,17 +179,14 @@ const App = (state) => {
     roverStats = state.roverStats;
     activeRover = state.activeRover;
 
-    let roverDivs = "";
-    rovers.map((aRover) => {
-        const divClass = aRover == activeRover ? "RoverDivClassSelected" : "RoverDivClassNotSelected"
-        roverDivs += `<div class="${divClass}" id="RoverDiv${aRover}" onClick='clickRover("${aRover}")'>${aRover}</div>`
-    })
+    // const roverDivs = 
+
     return `
         <header><title>Mars Rover Dashboard</title></header>
         <main>
             <section>
                 <div class="RoverButtons">
-                ${roverDivs}
+                ${generateRoverHtmlDivs(rovers, activeRover, createSingleRoverHtmlDiv)}
                 </div>
                 <div id="StatsRow" class="roverStatsRow">
                     <div class="roverStats">Launch Date: ${roverStats ? roverStats.launchDate : ""}</div>
