@@ -99,9 +99,10 @@ function createSingleRoverHtmlDiv(roverName, activeRoverName) {
 // Higher-order function to generate divs HTML for each rover
 function generateRoverHtmlDivs(roverNames, activeRoverName, callback) {
     let roversHtml = "";
-    roverNames.forEach(roverName => {
-        roversHtml += callback(roverName, activeRoverName);
+    const roversHtmlLines = roverNames.map(roverName => {
+         return callback(roverName, activeRoverName);
     })
+    roversHtml = roversHtmlLines.join("\n");
     return roversHtml;
 }
 
