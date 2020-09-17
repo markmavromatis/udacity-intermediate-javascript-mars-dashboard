@@ -1,5 +1,40 @@
 /* -------------------  MOBILE  --------------------- */
 
+.defaultFont {
+  font-size: 20px;
+}
+
+.pagesDiv {
+  display: block;
+}
+
+.roverDiv {
+  width: 30%;
+}
+
+statsDivider {
+  display: none;
+}
+
+/* Row of Rover stats (launch date, maximum date, etc.) */
+.roverStats {
+  display: block;
+  padding: 5px;
+}
+
+.searchDateDiv {
+  display: block;
+}
+
+
+.searchDateLabel {
+  font-weight: bold;
+}
+
+.pagesLabel {
+  font-weight: bold;
+}
+
 body {
   display: flex;
   flex-direction: column;
@@ -7,68 +42,73 @@ body {
   min-height: 100vh;
 }
 
-header {
-  /* header styles */
-}
 
 main {
   flex: 1;
   padding: 20px;
 }
 
-footer {
-  /* footer styles */
-}
 
 .roverStatsRow {
   padding-top: 10px;
   padding-bottom: 10px;
-  background-color: lightgray;
+  background-color: skyblue;
 }
 
 
 .searchCriteriaRow {
   padding-top: 10px;
   padding-bottom: 10px;
-  background-color: lightgray;
+  background-color: skyblue;
 }
 
-.searchDateDiv {
-  display: inline-block;
-}
 
-.pagesDiv {
-  display: inline-block;
-  padding-left: 50px;
+
+.RoverTable {
+  display: table;
+  width: 100%;
 }
 
 /* Row of Rover Buttons */
 .RoverButtons {
+  display: table-row;
+  width: 900px;
   margin-bottom: 10px;
 }
 
 /* Rover Buttons Styling (Selected Style) */
 .RoverDivClassSelected  {
+  font-size: 24px;
+  display: table-cell;
+  width: 30%;
   background-color: skyblue;
-  display: inline;
   padding: 10px;
+  border-top: 5px solid black;
+  border-left: 5px solid black;
+  border-right: 5px solid black;
 }
 
 /* Rover Buttons Styling (Unselected Style) */
 .RoverDivClassNotSelected  {
+  font-size: 24px;
+  display: table-cell;
+  width: 30%;
   background-color: lightgray;
-  display: inline;
   padding: 10px;
+  font-size: 20px;
+  border-top: 5px solid black;
+  border-left: 5px solid black;
+  border-right: 5px solid black;
+  border-bottom: 5px solid black;
 }
 
-/* Row of Rover stats (launch date, maximum date, etc.) */
-.roverStats {
-  display: inline;
-  padding: 5px;
-}
 
 .roverStatsLabel {
   font-weight: bold;
+}
+
+.marsImage {
+  width: 25%;
 }
 
 
@@ -76,30 +116,34 @@ footer {
 /* -------------------  TABLET  --------------------- */
 @media (min-width: 768px) {
   /* use mobile */
-
-  .pageDropdownDiv {
-    font-size: 14px;
+  
+  .RoverTable {
+    width: 750px;
+  }
+  
+  .defaultFont {
+    font-size: 20px;
   }
 
   .pagesDiv {
-    font-size: 14px;
+    display: inline-block;
+    padding-left: 50px;
   }
 
   .roverDiv {
-    font-size: 14px;
+    width: 100%;
   }
 
   .roverStats {
-    font-size: 14px;
+    display: inline;
   }
 
   .searchDateDiv {
-    font-size: 14px;
+    display: inline;
   }
 
   .marsImage {
     width: 200px;
-    height: 200px;
   }
 }
 
@@ -108,58 +152,32 @@ footer {
 @media (min-width: 1224px) {
   /* use mobile */
 
-  .pageDropdownDiv {
-    font-size: 18px;
+  .defaultFont {
+    font-size: 24px;
   }
 
-  .pagesDiv {
-    font-size: 18px;
+  .RoverDivClassSelected  {
+    font-size: 28px;
   }
 
-  .roverDiv {
-    font-size: 18px;
-  }
-
-  .roverStats {
-    font-size: 18px;
-  }
-
-  .searchDateDiv {
-    font-size: 18px;
+  .RoverDivClassNotSelected  {
+    font-size: 28px;
   }
 
   .marsImage {
-    width: 400px;
-    height: 400px;
+    width: 300px;
   }
 }
 
 /* -------------------  LARGE SCREENS  -------------- */
 
 @media (min-width: 1824px) {
-  /* use mobile */
-  .pageDropdownDiv {
-    font-size: 24px;
-  }
 
-  .pagesDiv {
-    font-size: 24px;
-  }
-
-  .roverDiv {
-    font-size: 24px;
-  }
-
-  .roverStats {
-    font-size: 24px;
-  }
-
-  .searchDateDiv {
+  .defaultFont {
     font-size: 24px;
   }
 
   .marsImage {
     width: 600px;
-    height: 600px;
   }
 }

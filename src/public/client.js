@@ -46,10 +46,12 @@ async function onSearchDateChange() {
 
     // How many pages?
     const pagesLabel = document.createElement("label");
+    pagesLabel.setAttribute("class", "defaultFont pagesLabel");
     pagesLabel.innerHTML = "Pages: ";
     pagesDiv.appendChild(pagesLabel);
 
     const pagesDropdown = await generatePageDropdown(roverName, newSearchDate, getImageStats)
+    pagesDropdown.setAttribute("class", "defaultFont");
     pagesDiv.appendChild(pagesDropdown);
 
     // Simulate selection of page 1
@@ -92,7 +94,7 @@ async function init() {
 
 // Create HTML Div button for the rover. Determine coloring of button based on whether the rover is 'active'.
 function createSingleRoverHtmlDiv(roverName, activeRoverName) {
-    const divClass = roverName == activeRoverName ? "RoverDivClassSelected roverDiv" : "RoverDivClassNotSelected roverDiv";
+    const divClass = roverName === activeRoverName ? "RoverDivClassSelected" : "RoverDivClassNotSelected";
     return `<div class="${divClass}" id="RoverDiv${roverName}" onClick='clickRover("${roverName}")'>${roverName}</div>`
 }
 
@@ -114,7 +116,7 @@ async function generatePageDropdown(roverName, searchDate, callback) {
 
     const pagesDropdown = document.createElement("select");
     pagesDropdown.setAttribute("id", "PagesDropdown");
-    pagesDropdown.setAttribute("class", "pageDropdownDiv");
+    pagesDropdown.setAttribute("class", "defaultFont");
     pagesDropdown.setAttribute("onchange", `retrieveImages('${roverName}', '${searchDate}', document.getElementById("PagesDropdown").value)`);
     for (let i = 0; i < totalPages; i++) {
         const pagesOption = document.createElement("option");
@@ -139,19 +141,21 @@ const App = (state) => {
         <header><title>Mars Rover Dashboard</title></header>
         <main>
             <section>
+                <div class="RoverTable">
                 <div class="RoverButtons">
                 ${generateRoverHtmlDivs(rovers, activeRover, createSingleRoverHtmlDiv)}
                 </div>
+                </div>
                 <div id="StatsRow" class="roverStatsRow">
-                    <div class="roverStats"><label class="roverStatsLabel">Launch Date:</label><label class="roverStatsValue">${roverStats ? roverStats.launchDate : ""}</label></div>
-                    <div class="roverStats"><label class="roverStatsLabel">Landing Date:</label><label class="roverStatsValue">${roverStats ? roverStats.landingDate : ""}</label></div>
-                    <div class="roverStats"><label class="roverStatsLabel">Status:</label><label class="roverStatsValue">${roverStats ? roverStats.status : ""}</label></div>
-                    <div class="roverStats"><label class="roverStatsLabel">Last Photo Date:</label><label class="roverStatsValue">${roverStats ? roverStats.lastDate : ""}</label></div>
+                    <div class="roverStats"><label class="roverStatsLabel defaultFont">Launch Date: </label><label class="defaultFont">${roverStats ? roverStats.launchDate : ""}</label></div>
+                    <div class="roverStats"><label class="roverStatsLabel defaultFont">Landing Date: </label><label class="defaultFont">${roverStats ? roverStats.landingDate : ""}</label></div>
+                    <div class="roverStats"><label class="roverStatsLabel defaultFont">Status: </label><label class="defaultFont">${roverStats ? roverStats.status : ""}</label></div>
+                    <div class="roverStats"><label class="roverStatsLabel defaultFont">Last Photo Date: </label><label class="defaultFont">${roverStats ? roverStats.lastDate : ""}</label></div>
                 </div>
                 <div id="SearchCriteria" class="searchCriteriaRow">
                     <div id="SearchDate" class="searchDateDiv">
-                    <label class="searchDateDiv">Image Date:</label>
-                    <input class="searchDateDiv" id="searchDate" type="date" onChange="onSearchDateChange()" value="${store.searchDate}" min="${roverStats.landingDate}" max="${roverStats.lastDate}"/>
+                    <label class="searchDateLabel defaultFont">Image Date:</label>
+                    <input class="defaultFont" id="searchDate" type="date" onChange="onSearchDateChange()" value="${store.searchDate}" min="${roverStats.landingDate}" max="${roverStats.lastDate}"/>
                     </div>
                     <div id="PagesDiv" class="pagesDiv"></div>
                 </div>
