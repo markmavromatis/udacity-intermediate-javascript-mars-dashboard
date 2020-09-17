@@ -140,17 +140,19 @@ const App = (state) => {
     return `
         <header><title>Mars Rover Dashboard</title></header>
         <main>
-            <section>
+            <section class="sectionProperties">
                 <div class="RoverTable">
                 <div class="RoverButtons">
                 ${generateRoverHtmlDivs(rovers, activeRover, createSingleRoverHtmlDiv)}
                 </div>
                 </div>
-                <div id="StatsRow" class="roverStatsRow">
-                    <div class="roverStats"><label class="roverStatsLabel defaultFont">Launch Date: </label><label class="defaultFont">${roverStats ? roverStats.launchDate : ""}</label></div>
-                    <div class="roverStats"><label class="roverStatsLabel defaultFont">Landing Date: </label><label class="defaultFont">${roverStats ? roverStats.landingDate : ""}</label></div>
-                    <div class="roverStats"><label class="roverStatsLabel defaultFont">Status: </label><label class="defaultFont">${roverStats ? roverStats.status : ""}</label></div>
-                    <div class="roverStats"><label class="roverStatsLabel defaultFont">Last Photo Date: </label><label class="defaultFont">${roverStats ? roverStats.lastDate : ""}</label></div>
+                <div id="StatsRow1" class="roverStatsRow1">
+                        <div class="roverStatsCol1"><label class="roverStatsLabel defaultFont">Launch Date: </label><label class="defaultFont">${roverStats ? roverStats.launchDate : ""}</label></div>
+                        <div class="roverStatsCol2"><label class="roverStatsLabel defaultFont">Landing Date: </label><label class="defaultFont">${roverStats ? roverStats.landingDate : ""}</label></div>
+                </div>
+                <div id="StatsRow2" class="roverStatsRow2">
+                    <div class="roverStatsCol1"><label class="roverStatsLabel defaultFont">Status: </label><label class="defaultFont">${roverStats ? roverStats.status : ""}</label></div>
+                    <div class="roverStatsCol2"><label class="roverStatsLabel defaultFont">Last Photo Date: </label><label class="defaultFont">${roverStats ? roverStats.lastDate : ""}</label></div>
                 </div>
                 <div id="SearchCriteria" class="searchCriteriaRow">
                     <div id="SearchDate" class="searchDateDiv">

@@ -100,7 +100,7 @@ app.get('/roverDetails/:roverName', async (req, res) => {
             name: aRover.name,
             landingDate: aRover.landingDate,
             launchDate: aRover.launchDate,
-            status: aRover.status,
+            status: aRover.status[0].toUpperCase() + aRover.status.slice(1),
             maxDate: aRover.maxDate
         }));
     } else {

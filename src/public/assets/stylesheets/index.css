@@ -17,9 +17,22 @@ statsDivider {
 }
 
 /* Row of Rover stats (launch date, maximum date, etc.) */
-.roverStats {
+.roverStatsCol1 {
+  width: 500px
+}
+
+.roverStatsCol2 {
+  width: 500px
+}
+
+.roverStatsRow1 {
   display: block;
-  padding: 5px;
+  margin-top: 20px;
+}
+
+.roverStatsRow2 {
+  display: block;
+  margin-bottom: 20px;
 }
 
 .searchDateDiv {
@@ -48,18 +61,15 @@ main {
   padding: 20px;
 }
 
-
-.roverStatsRow {
-  padding-top: 10px;
-  padding-bottom: 10px;
+.sectionProperties {
   background-color: skyblue;
 }
-
 
 .searchCriteriaRow {
   padding-top: 10px;
   padding-bottom: 10px;
   background-color: skyblue;
+  margin-bottom: 30px
 }
 
 
@@ -109,6 +119,7 @@ main {
 
 .marsImage {
   width: 25%;
+  padding-right: 5px;
 }
 
 
@@ -134,8 +145,20 @@ main {
     width: 100%;
   }
 
-  .roverStats {
-    display: inline;
+  .roverStatsCol1 {
+    flex: 0 0 400px;
+  }
+
+  .roverStatsCol2 {
+    flex: 1;
+  }
+
+  .roverStatsRow1 {
+    display: flex;
+  }
+
+  .roverStatsRow2 {
+    display: flex;
   }
 
   .searchDateDiv {
